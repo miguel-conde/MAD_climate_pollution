@@ -103,3 +103,10 @@ raw_clim_data <- fromJSON(temp_file) %>%
   as.tibble
 
 unlink(temp_file)
+
+temp_file <- tempfile()
+download.file(lst_clim_data$metadatos, temp_file)
+
+raw_clim_metadata <- fromJSON(readLines(temp_file, encoding = "utf8")) 
+
+unlink(temp_file)
