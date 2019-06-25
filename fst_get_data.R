@@ -88,6 +88,7 @@ endpoint <-
 callx <- paste0(base_url, endpoint, "?api_key=", API_key)
 callx
 
+# Get urls con datos y metadatos
 json_clim_data <- GET(callx, add_headers('cache-control' = "no-cache"))
 json_clim_data
 
@@ -96,6 +97,7 @@ txt_clim_data
 
 lst_clim_data <- fromJSON(txt_clim_data, flatten = TRUE)
 
+## Datos
 temp_file <- tempfile()
 download.file(lst_clim_data$datos, temp_file)
 
@@ -104,9 +106,17 @@ raw_clim_data <- fromJSON(temp_file) %>%
 
 unlink(temp_file)
 
+## Metadatos
 temp_file <- tempfile()
 download.file(lst_clim_data$metadatos, temp_file)
 
 raw_clim_metadata <- fromJSON(readLines(temp_file, encoding = "utf8")) 
 
 unlink(temp_file)
+
+## Final
+raw_clim_data <- raw_clim_data %>% 
+  select(-indicativo, -nombre, -provincia, -altitud) %>% 
+  mutate(fecha = as.Date(fecha)) %>% 
+  mutate_at(vars(-fecha, -contains("hora")), 
+            list(function(x) as.numeric(str_replace(x, ",", "."))))
